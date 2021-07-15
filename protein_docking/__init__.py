@@ -26,7 +26,7 @@
 # **************************************************************************
 
 import os
-from pyworkflow.utils import Environ
+from pyworkflow.utils import Environ, runJob, greenStr
 import pwem
 from .constants import PROTEIN_DOCKING_HOME
 
@@ -41,7 +41,7 @@ class Plugin(pwem.Plugin):
     _pathVars = [PROTEIN_DOCKING_HOME]
     @classmethod
     def _defineVariables(cls):
-        cls._defineEmVar(PROTEIN_DOCKING_HOME, 'frodock3-linux64')
+        cls._defineEmVar(PROTEIN_DOCKING_HOME, 'frodock3-3.12')
 
     @classmethod
     def getEnviron(cls):
@@ -55,6 +55,23 @@ class Plugin(pwem.Plugin):
         }, position=Environ.BEGIN)
 
         return environ
+
+    @classmethod
+    def getProgram(cls, program):
+        """ Return the program binary that will be used. """
+        path = cls.getVar(PROTEIN_DOCKING_HOME)
+        if os.path.exists(path):
+            binary = os.path.join(path, 'bin', program)
+
+        return binary
+
+    @classmethod
+    def runProgram(cls, program, args):
+        #runJob(None, program, args, env=cls.getEnviron())
+        cmd = '%s %s' % (program, args)
+        print("** Running command: %s" % greenStr(cmd), flush=True)
+        os.system(cmd)
+
 
     @classmethod
     def defineBinaries(cls, env):

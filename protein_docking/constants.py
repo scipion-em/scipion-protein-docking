@@ -26,3 +26,6 @@
 # **************************************************************************
 
 PROTEIN_DOCKING_HOME = 'PROTEIN_DOCKING_HOME'
+
+# Programs
+FRODOCKGRID = 'frodockgrid'
