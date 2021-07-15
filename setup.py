@@ -36,7 +36,7 @@ from setuptools import setup, find_packages
 # To use a consistent encoding
 from codecs import open
 from os import path
-from protein_docking  import __version__
+from proteindocking import __version__
 
 here = path.abspath(path.dirname(__file__))
 
@@ -170,7 +170,7 @@ setup(
     # MANIFEST.in as well.
     # include_package_data=True,
     package_data={  # Optional
-       'protein_docking': ['protocols.conf'],
+       'proteindocking': ['protocols.conf'],
     },
 
     # Although 'package_data' is the preferred approach, in some case you may
@@ -208,6 +208,6 @@ setup(
     },
     install_requires=[requirements],
     entry_points={
-        'pyworkflow.plugin': 'protein_docking = protein_docking'
+        'pyworkflow.plugin': 'proteindocking = proteindocking'
     },
 )

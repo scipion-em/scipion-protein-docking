@@ -26,11 +26,11 @@
 # **************************************************************************
 import os
 
-from protein_docking.constants import FRODOCKGRID
+from proteindocking.constants import FRODOCKGRID
 from pwem.protocols import EMProtocol
 from pyworkflow.protocol import PointerParam, EnumParam
 
-from protein_docking import Plugin
+from proteindocking import Plugin
 from pyworkflow.utils import yellowStr
 
 
@@ -72,7 +72,7 @@ class ProtFrodockProtein(EMProtocol):
         """
         receptorPdbPath = os.path.abspath(self.inputPdbReceptor.get().getFileName())
         ligandPdbPath = os.path.abspath(self.inputPdbLigand.get().getFileName())
-        interactionDict = ['E', 'A', 'None']
+        interactionDict = ['E', 'A', None]
         interactionType = interactionDict[self.interactionType.get()]
         program = self._getProgram(FRODOCKGRID)
 
