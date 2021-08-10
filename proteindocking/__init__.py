@@ -29,7 +29,8 @@ import os
 from pyworkflow.utils import Environ, greenStr
 import pwem
 from .constants import (PROTEIN_DOCKING_HOME, ZDOCK_DOCKING_HOME,
-                        ZRANK_DOCKING_HOME, FRODOCKGRID, ZRANK, ZDOCK)
+                        ZRANK_DOCKING_HOME, FRODOCKGRID, ZRANK, ZDOCK,
+                        FRODOCKCLUSTER, FRODOCK, SOAP)
 
 _logo = ""
 _references = ['']
@@ -44,25 +45,19 @@ class Plugin(pwem.Plugin):
     def _defineVariables(cls):
         cls._defineEmVar(PROTEIN_DOCKING_HOME, 'frodock3-3.12')
         cls._defineEmVar(ZDOCK_DOCKING_HOME, 'zdock-3.0.2')
-        cls._defineEmVar(ZRANK_DOCKING_HOME, 'zdock-2.0')
+        cls._defineEmVar(ZRANK_DOCKING_HOME, 'zrank-2.0')
 
     @classmethod
     def getEnviron(cls):
         """ Setup the environment variables needed to launch frodock3. """
         environ = Environ(os.environ)
-
-        environ.update({
-            'PATH': Plugin.getHome(),
-            'LD_LIBRARY_PATH': (str.join(cls.getHome(), 'lib') + ":" +
-                                cls.getHome()),
-        }, position=Environ.BEGIN)
-
         return environ
 
     @classmethod
     def getProgram(cls, program):
         """ Return the program binary that will be used. """
-        if program == FRODOCKGRID:
+        if (program == FRODOCKGRID or program == FRODOCK or
+                program == FRODOCKCLUSTER or program == SOAP):
             path = cls.getVar(PROTEIN_DOCKING_HOME)
             if os.path.exists(path):
                 binary = os.path.join(path, 'bin', program)
@@ -91,9 +86,11 @@ class Plugin(pwem.Plugin):
         env.addPackage('frodock3', version='3.12',
                        tar='frodock3_linux64.tgz',
                        default=True)
+        # Add zdock
         env.addPackage('zdock', version='3.0.2',
                        tar='zdock3.0.2_linux_x64.tar.gz',
                        default=True)
+        # Add zrank
         env.addPackage('zrank', version='1.0',
                        tar='zrank_linux_64bit.tar.gz',
                        default=False)

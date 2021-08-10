@@ -48,6 +48,7 @@ class ProtZrankProtein(EMProtocol):
                       default=2,
                       label="Type of interaction",
                       help='Type of interaction')
+        form.addParallelSection(threads=4, mpi=1)
 
     def _insertAllSteps(self):
         pass

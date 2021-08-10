@@ -25,13 +25,14 @@
 # *
 # **************************************************************************
 import os
+import shutil
 
-from proteindocking.constants import FRODOCKGRID
+from proteindocking.constants import FRODOCKGRID, FRODOCK, FRODOCKCLUSTER, SOAP
 from pwem.protocols import EMProtocol
 from pyworkflow.protocol import PointerParam, EnumParam
 
 from proteindocking import Plugin
-from pyworkflow.utils import yellowStr
+import pyworkflow.utils as pwutils
 
 
 class ProtFrodockProtein(EMProtocol):
@@ -54,6 +55,7 @@ class ProtFrodockProtein(EMProtocol):
                       default=2,
                       label="Type of interaction",
                       help='Type of interaction')
+        form.addParallelSection(threads=4, mpi=1)
 
     def _insertAllSteps(self):
         self._insertFunctionStep(self.mapGenerationStep)
@@ -77,14 +79,14 @@ class ProtFrodockProtein(EMProtocol):
         program = self._getProgram(FRODOCKGRID)
 
         # Creation of receptor vdw potential map
-        print(yellowStr('Creation of receptor vdw potential map'), flush=True)
+        print(pwutils.yellowStr('Creation of receptor vdw potential map'), flush=True)
         program, args = self.getFrodockGridCommand(program=program,
                                                    pdbFile=receptorPdbPath,
                                                    outputSuffix='_W.ccp4')
         Plugin.runProgram(program, args)
 
         # Creation of the receptor electrostatic potential map
-        print(yellowStr('Creation of the receptor electrostatic potential map'),
+        print(pwutils.yellowStr('Creation of the receptor electrostatic potential map'),
               flush=True)
         program, args = self.getFrodockGridCommand(program=program,
                                                    pdbFile=receptorPdbPath,
@@ -95,7 +97,7 @@ class ProtFrodockProtein(EMProtocol):
         Plugin.runProgram(program, args)
 
         # Creation of the receptor desolvation potential map
-        print(yellowStr('Creation of the receptor desolvation potential map'), flush=True)
+        print(pwutils.yellowStr('Creation of the receptor desolvation potential map'), flush=True)
         program, args = self.getFrodockGridCommand(program=program,
                                                    pdbFile=receptorPdbPath,
                                                    outputSuffix='_DS.ccp4',
@@ -104,7 +106,7 @@ class ProtFrodockProtein(EMProtocol):
         Plugin.runProgram(program, args)
 
         # Creation of the ligand desolvation potential map
-        print(yellowStr('Creation of the ligand desolvation potential map'),
+        print(pwutils.yellowStr('Creation of the ligand desolvation potential map'),
               flush=True)
         program, args = self.getFrodockGridCommand(program=program,
                                                    pdbFile=ligandPdbPath,
@@ -112,19 +114,49 @@ class ProtFrodockProtein(EMProtocol):
                                                    mValue=3)
 
         Plugin.runProgram(program, args)
-
+        
+        # Moving receptorPdb and ligandPdb files
+        receptorPdbPath = os.path.abspath(self.inputPdbReceptor.get().getFileName().split('.')[0]+'_ASA.pdb')
+        shutil.move(receptorPdbPath, self._getExtraPath())
+        ligandPdbPath = os.path.abspath(self.inputPdbLigand.get().getFileName().split('.')[0]+'_ASA.pdb')
+        shutil.move(ligandPdbPath, self._getExtraPath())
 
     def dockingSearchStep(self):
-        """Creation of the receptor electrostatic potential map"""
-        pass
+        """Executing docking step"""
+        print(pwutils.yellowStr('Executing docking search step'), flush=True)
+
+        program = self._getProgram(FRODOCK)
+        receptorPdbPath = os.path.abspath(self.inputPdbReceptor.get().getFileName())
+        ligandPdbPath = os.path.abspath(self.inputPdbLigand.get().getFileName())
+        outputFilePath = os.path.abspath(self._getExtraPath('dock.dat'))
+        
+        program, args = self.getFrodockCommand(program=program,
+                                               recFile=receptorPdbPath,
+                                               ligFile=ligandPdbPath,
+                                               outputFile=outputFilePath)
+
+        Plugin.runProgram(program, args)
 
     def clusteringStep(self):
-        pass
+        """Executing clustering step"""
+        print(pwutils.yellowStr('Executing clustering step'), flush=True)
+
+        program = self._getProgram(FRODOCKCLUSTER)
+        ligandPdbPath = os.path.abspath(self.inputPdbLigand.get().getFileName())
+        dockFilePath = os.path.abspath(self._getExtraPath('dock.dat'))
+        clustFilePath = os.path.abspath(self._getExtraPath('clust_dock.dat'))
+        
+        program, args = self.getFrodockclusterCommand(program=program,
+                                                      ligFile=ligandPdbPath,
+                                                      dockFile=dockFilePath,
+                                                      outputFile=clustFilePath)
+
+        Plugin.runProgram(program, args)
 
     def createOutputStep(self):
         pass
 
-    # -----------------------Utils funcitons-------------------------------
+    # -----------------------Utils functions-------------------------------
 
     def _getProgram(self, programName):
         """ Return program binary. """
@@ -144,6 +176,37 @@ class ProtFrodockProtein(EMProtocol):
 
         params = '%s -o %s%s%s' % (pdbInputFile, outputPdbFilePath, mValue, tValue)
         return program,  params
+    
+    def getFrodockCommand(self,  **kwargs):
+        program = kwargs.get('program')
+        recInputFile = kwargs.get('recFile')
+        ligInputFile = kwargs.get('ligFile')
+        outFile = kwargs.get('outputFile')
+        soap = self._getProgram(SOAP)
 
+        recFileName = os.path.basename(recInputFile).split('.')[0] + '_ASA.pdb'
+        recFilePath = os.path.abspath(self._getExtraPath(recFileName))        
+        ligFileName = os.path.basename(ligInputFile).split('.')[0] + '_ASA.pdb'
+        ligFilePath = os.path.abspath(self._getExtraPath(ligFileName))
+    
+        vdwFileName = os.path.basename(recInputFile).split('.')[0] + '_W.ccp4'
+        vdwFilePath = os.path.abspath(self._getExtraPath(vdwFileName))         
+        eleFileName = os.path.basename(recInputFile).split('.')[0] + '_E.ccp4'
+        eleFilePath = os.path.abspath(self._getExtraPath(eleFileName))     
+        dsRecName = os.path.basename(recInputFile).split('.')[0] + '_DS.ccp4'
+        dsRecPath = os.path.abspath(self._getExtraPath(dsRecName))  
+        dsLigName = os.path.basename(ligInputFile).split('.')[0] + '_DS.ccp4'
+        dsLigPath = os.path.abspath(self._getExtraPath(dsLigName))       
 
-
+        params = '%s %s -w %s -e %s --th 10 -d %s,%s -s %s -o %s' % (recFilePath, ligFilePath, 
+                                                               vdwFilePath, eleFilePath, dsRecPath, dsLigPath, soap, outFile)
+        return program,  params
+    
+    def getFrodockclusterCommand(self,  **kwargs):
+        program = kwargs.get('program')
+        ligInputFile = kwargs.get('ligFile')
+        inputDockFile = kwargs.get('dockFile')
+        outFile = kwargs.get('outputFile')
+   
+        params = '%s %s --nc 100 -d 5.0 -o %s' % (inputDockFile, ligInputFile, outFile)
+        return program,  params
