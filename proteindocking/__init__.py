@@ -26,9 +26,10 @@
 # **************************************************************************
 
 import os
-from pyworkflow.utils import Environ, runJob, greenStr
+from pyworkflow.utils import Environ, greenStr
 import pwem
-from .constants import PROTEIN_DOCKING_HOME
+from .constants import (PROTEIN_DOCKING_HOME, ZDOCK_DOCKING_HOME,
+                        ZRANK_DOCKING_HOME, FRODOCKGRID, ZRANK, ZDOCK)
 
 _logo = ""
 _references = ['']
@@ -38,10 +39,12 @@ __version__ = '0.0.1'
 class Plugin(pwem.Plugin):
     _url = "https://github.com/scipion-em/scipion-protein-docking"
     _homeVar = PROTEIN_DOCKING_HOME
-    _pathVars = [PROTEIN_DOCKING_HOME]
+    _pathVars = [PROTEIN_DOCKING_HOME, ZDOCK_DOCKING_HOME, ZRANK_DOCKING_HOME]
     @classmethod
     def _defineVariables(cls):
         cls._defineEmVar(PROTEIN_DOCKING_HOME, 'frodock3-3.12')
+        cls._defineEmVar(ZDOCK_DOCKING_HOME, 'zdock-3.0.2')
+        cls._defineEmVar(ZRANK_DOCKING_HOME, 'zdock-2.0')
 
     @classmethod
     def getEnviron(cls):
@@ -59,9 +62,18 @@ class Plugin(pwem.Plugin):
     @classmethod
     def getProgram(cls, program):
         """ Return the program binary that will be used. """
-        path = cls.getVar(PROTEIN_DOCKING_HOME)
-        if os.path.exists(path):
-            binary = os.path.join(path, 'bin', program)
+        if program == FRODOCKGRID:
+            path = cls.getVar(PROTEIN_DOCKING_HOME)
+            if os.path.exists(path):
+                binary = os.path.join(path, 'bin', program)
+        elif program == ZDOCK:
+            path = cls.getVar(ZDOCK_DOCKING_HOME)
+            if os.path.exists(path):
+                binary = os.path.join(path, program)
+        elif program == ZRANK:
+            path = cls.getVar(ZRANK_DOCKING_HOME)
+            if os.path.exists(path):
+                binary = os.path.join(path, program)
 
         return binary
 

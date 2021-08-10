@@ -26,6 +26,8 @@
 # **************************************************************************
 
 PROTEIN_DOCKING_HOME = 'PROTEIN_DOCKING_HOME'
+ZDOCK_DOCKING_HOME = 'PROTEIN_ZDOCK_HOME'
+ZRANK_DOCKING_HOME = 'PROTEIN_ZRANK_HOME'
 
 # Programs
 FRODOCKGRID = 'frodockgrid'

@@ -26,3 +26,5 @@
 # **************************************************************************
 
 from .protocol_frodock import ProtFrodockProtein
+from .protocol_zdock import ProtZdockProtein
+from .protocol_zrank import ProtZrankProtein
