@@ -29,3 +29,6 @@ PROTEIN_DOCKING_HOME = 'PROTEIN_DOCKING_HOME'
 
 # Programs
 FRODOCKGRID = 'frodockgrid'
+FRODOCK = 'frodock_gcc'
+FRODOCKCLUSTER = 'frodockcluster'
+SOAP = 'soap.bin'
