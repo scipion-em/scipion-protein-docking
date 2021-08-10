@@ -1,7 +1,7 @@
 # **************************************************************************
 # *
 # * Authors: Yunior C. Fonseca Reyna    (cfonseca@cnb.csic.es)
-# *          Erney Ramirez Aportela     (eramirez@cnb.csic.es)
+# *
 # *
 # * Unidad de  Bioinformatica of Centro Nacional de Biotecnologia , CSIC
 # *
@@ -25,9 +25,30 @@
 # *
 # **************************************************************************
 
-PROTEIN_DOCKING_HOME = 'PROTEIN_DOCKING_HOME'
+from pwem.protocols import EMProtocol
+from pyworkflow.protocol import PointerParam, EnumParam
 
-# Programs
-FRODOCKGRID = 'frodockgrid'
-ZRANK = 'zrank'
-ZDOCK = 'zdock'
+
+class ProtZdockProtein(EMProtocol):
+    """
+    Protocol to perform protein-protein docking using the ZDOCK docking tool
+    """
+
+    def _defineParams(self, form):
+        form.addSection(label='Input')
+        form.addParam('inputPdbReceptor', PointerParam,
+                      pointerClass='AtomStruct',
+                      label="Receptor pdb", important=True,
+                      help='The receptor pdb')
+        form.addParam('inputPdbLigand', PointerParam,
+                      pointerClass='AtomStruct',
+                      label="ligand pdb", important=True,
+                      help='The ligand pdb')
+        form.addParam('interactionType', EnumParam,
+                      choices=['Enzyme-Substrate', 'Antigen-Antibody', 'Unknown'],
+                      default=2,
+                      label="Type of interaction",
+                      help='Type of interaction')
+
+    def _insertAllSteps(self):
+        pass

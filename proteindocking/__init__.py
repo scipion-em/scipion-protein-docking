@@ -79,3 +79,13 @@ class Plugin(pwem.Plugin):
         env.addPackage('frodock3', version='3.12',
                        tar='frodock3_linux64.tgz',
                        default=True)
+        env.addPackage('zdock', version='3.0.2',
+                       tar='zdock3.0.2_linux_x64.tar.gz',
+                       default=True)
+        env.addPackage('zrank', version='1.0',
+                       tar='zrank_linux_64bit.tar.gz',
+                       default=False)
+        env.addPackage('zrank', version='2.0',
+                       tar='zrank2_linux.tar.gz',
+                       default=True)
+
